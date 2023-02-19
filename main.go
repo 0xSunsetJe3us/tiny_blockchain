@@ -6,16 +6,11 @@ import (
 	"tiny_blockchain/merkel_tree"
 )
 
-var testData []byte
-
 func initData() [][]byte {
 	var data [][]byte
 	for i := 0; i < 4; i++ {
 		str := fmt.Sprintf("test data %d", i)
 		bz, _ := json.Marshal(str)
-		if i == 3 {
-			testData = bz
-		}
 		data = append(data, bz)
 	}
 	return data
