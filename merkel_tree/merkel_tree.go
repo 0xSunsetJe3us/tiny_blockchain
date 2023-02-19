@@ -1,6 +1,7 @@
 package merkel_tree
 
 import (
+	"bytes"
 	"container/list"
 	"crypto/md5"
 	"crypto/sha1"
@@ -159,4 +160,37 @@ func (m *MerkelTree) PrintWholeTree() {
 			queue.PushBack(n.right)
 		}
 	}
+}
+
+// VerifyData @brief: 验证数据是否默克尔树中: 遍历所有叶子节点的hash进行比对
+func (m *MerkelTree) VerifyData(data []byte) (bool, error) {
+	dataHash := m.callHashHandler(data)
+	for _, leaf := range m.leaves {
+		if bytes.Compare(dataHash, leaf.hashValue) == 0 {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// VerifyTree @brief: 验证整颗默克尔树的hash
+func (m *MerkelTree) VerifyTree() (bool, error) {
+	reCalculateRootHash, err := m.root.verifyNode(m)
+	if err != nil {
+		return false, err
+	}
+	if bytes.Compare(m.root.hashValue, reCalculateRootHash) == 0 {
+		return true, nil
+	}
+	return false, nil
+}
+
+//@brief: 重新计算每一个节点的hash, 后续遍历
+func (n *node) verifyNode(m *MerkelTree) ([]byte, error) {
+	if n.leaf {
+		return m.callHashHandler(n.data), nil
+	}
+	leftHash, _ := n.left.verifyNode(m)
+	rightHash, _ := n.right.verifyNode(m)
+	return m.callHashHandler(append(leftHash, rightHash...)), nil
 }
