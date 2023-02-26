@@ -30,14 +30,16 @@ type blockBody struct {
 func NewSingleBlock(hashType string, data [][]byte, prevBlockHash []byte) (*Block, error) {
 	b := new(Block)
 	b.HashHandler = crypto.NewHashHandler(hashType)
-	b.Head = b.buildBlockHead(data)
+	b.Head = b.buildBlockHead(prevBlockHash, data)
 	b.Body = b.buildBlockBody(data)
 	return nil, nil
 }
 
-func (b *Block) buildBlockHead(data [][]byte) *blockHead {
+func (b *Block) buildBlockHead(prevBlockHash []byte, data [][]byte) *blockHead {
 	b.Head.timeStamp = time.Now().Unix()
-	b.Head.merkelRoot, _ = consensus.NewMerkelTree(b.HashHandler, data)
+	b.Head.merkelRootHash = consensus.NewMerkelTree(b.HashHandler, data)
+	b.Head.prevBlockHash = prevBlockHash
+	// TODO: bits and nonce
 	return nil
 }
 
